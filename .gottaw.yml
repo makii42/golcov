@@ -1,0 +1,15 @@
+# What is this file? Check it out at https://github.com/makii42/gottaw !
+excludes:
+- .git
+- .hg
+- .vscode
+- .idea
+- '*-go-tmp-umask'
+- vendor*
+- golcov*
+- '*mocks.go'
+pipeline:
+- dep ensure
+- go generate ./...
+- go build -v .
+- go test -v ./...
