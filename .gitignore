@@ -1,3 +1,4 @@
 vendor
 golcov
-*mocks.go
+mocks/*go
+.wercker

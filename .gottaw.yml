@@ -8,8 +8,11 @@ excludes:
 - vendor*
 - golcov*
 - '*mocks.go'
+- mocks/*
+- mock_*/*
+- .wercker
 pipeline:
 - dep ensure
 - go generate ./...
 - go build -v .
-- go test -v ./...
+- go test -cover -v ./...

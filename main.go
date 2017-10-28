@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
-	"github.com/spf13/afero"
+	"github.com/makii42/golcov/osadapter"
+	"github.com/makii42/golcov/runner"
+
 	"github.com/urfave/cli"
 )
 
@@ -21,8 +23,7 @@ func main() {
 }
 
 var (
-	fs   afero.Fs
-	osif OS
+	osa osadapter.OS
 )
 
 var testCmd = cli.Command{
@@ -32,11 +33,21 @@ var testCmd = cli.Command{
 }
 
 func setup(c *cli.Context) error {
-	fs = afero.NewOsFs()
-	osif = RealOS()
+	osa = osadapter.RealOS()
 	return nil
 }
 
 func testAction(c *cli.Context) {
-	fmt.Println("Hello World")
+	args := c.Args()
+	r, err := runner.NewTestRunner(osa, nil, args...)
+	if err != nil {
+		log.Printf("cannot create testrunner: %s", err.Error())
+		os.Exit(1)
+	}
+	coverSource, err := r.Run()
+	if err != nil {
+		log.Printf("error running tests: %s", err.Error())
+		os.Exit(2)
+	}
+	osa.Copy(os.Stdout, coverSource)
 }

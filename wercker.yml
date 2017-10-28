@@ -1,0 +1,31 @@
+box: golang:1.9
+build:
+  steps:
+    - setup-go-workspace:
+      package-dir:  github.com/makii42/golcov
+    - script:
+        name: set up build environment and tools
+        code: |
+          go get github.com/golang/mock/gomock
+          go get github.com/golang/mock/mockgen
+          go get github.com/golang/dep/cmd/dep
+    - script:
+        name: install code deps
+        code: |
+          dep ensure
+    - script:
+        name: generate code
+        code: |
+          go generate ./...
+    - script:
+        name: go build
+        code: |
+          go build .
+    - script:
+        name: go test
+        code: |
+          go test ./...
+    - script: 
+        name: test lcov with local package
+        code: |
+          ./golcov test ./runner/... ./osadapter/...
