@@ -28,7 +28,6 @@ func TestCreation(t *tt.T) {
 	test1 := testmocks.NewMockTest(mc)
 	test2 := testmocks.NewMockTest(mc)
 	var buf bytes.Buffer
-	osa.EXPECT().LookPath("go").Return(goBin, nil)
 
 	r, err := NewTestRunner(goBin, osa, &buf, test1, test2)
 
@@ -71,8 +70,9 @@ func TestRun(t *tt.T) {
 	goBin := "/bin/go"
 	osa := osmocks.NewMockOS(mc)
 	theTest := testmocks.NewMockTest(mc)
+	outcome := testmocks.NewMockOutcome(mc)
+	theTest.EXPECT().Run().Return(outcome, nil)
 
-	osa.EXPECT().Command(goBin)
 	tr := &testRunner{
 		goBinary: goBin,
 		osa:      osa,
