@@ -16,26 +16,23 @@ type (
 		Run() (io.Reader, error)
 	}
 	testRunner struct {
-		osa      osadapter.OS
-		goBinary string
-		Out      io.Writer
-		tests    []test.Test
+		osa   osadapter.OS
+		Out   io.Writer
+		tests []test.Test
 	}
 )
 
 // NewTestRunner creates a new runner that executes all tests in the packages specified.
 // If not packages are specified, it will discover all packages containing go sources,
 // excluding some, like `vendor`.
-func NewTestRunner(goBinary string, osa osadapter.OS, out io.Writer, tests ...test.Test) (TestRunner, error) {
-	// todo: verify gobin.
+func NewTestRunner(osa osadapter.OS, out io.Writer, tests ...test.Test) (TestRunner, error) {
 	if len(tests) == 0 {
 		return nil, fmt.Errorf("no tests specified")
 	}
 	return &testRunner{
-		osa:      osa,
-		goBinary: goBinary,
-		Out:      out,
-		tests:    tests,
+		osa:   osa,
+		Out:   out,
+		tests: tests,
 	}, nil
 }
 
@@ -55,14 +52,7 @@ func (tr *testRunner) Run() (io.Reader, error) {
 
 func (tr *testRunner) DiscoverPkgs(p string) ([]string, error) {
 	folders := make(map[string]int)
-	err := filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			folders[path] = 0
-		} else if strings.HasSuffix(path, ".go") {
-
-		}
-		return nil
-	})
+	err := filepath.Walk(p, discoverFunc())
 	if err != nil {
 		return nil, err
 	}
@@ -73,4 +63,15 @@ func (tr *testRunner) DiscoverPkgs(p string) ([]string, error) {
 		}
 	}
 	return pkgs, nil
+}
+
+func discoverFunc() filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			folders[path] = 0
+		} else if strings.HasSuffix(path, ".go") {
+
+		}
+		return nil
+	}
 }

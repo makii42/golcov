@@ -54,7 +54,7 @@ func setup(c *cli.Context) error {
 func testAction(c *cli.Context) {
 	args := c.Args()
 	tests := createTests(args...)
-	r, err := runner.NewTestRunner(goBinary, osa, nil, tests...)
+	r, err := runner.NewTestRunner(osa, nil, tests...)
 	if err != nil {
 		log.Printf("cannot create testrunner: %s", err.Error())
 		os.Exit(1)

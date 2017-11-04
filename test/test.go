@@ -45,6 +45,7 @@ type (
 )
 
 func NewTest(goBin, pkg string, osa osadapter.OS) Test {
+	// todo: verify gobin.
 	return &test{
 		goBin: goBin,
 		pkg:   pkg,
