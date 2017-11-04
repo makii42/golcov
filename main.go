@@ -6,24 +6,33 @@ import (
 
 	"github.com/makii42/golcov/osadapter"
 	"github.com/makii42/golcov/runner"
+	"github.com/makii42/golcov/test"
 
 	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.App{
-		Name: "golcov",
+		Name:  "golcov",
+		Usage: "Runs go test with default coverage options for each package and writes it to standard out",
 		Commands: []cli.Command{
 			testCmd,
 		},
 		Before: setup,
 		Action: testAction,
+		Flags: []cli.Flag{
+			cli.BoolTFlag{
+				Name:  "vendor",
+				Usage: "not sure about this yet",
+			},
+		},
 	}
 	app.Run(os.Args)
 }
 
 var (
-	osa osadapter.OS
+	osa      osadapter.OS
+	goBinary string
 )
 
 var testCmd = cli.Command{
@@ -34,12 +43,18 @@ var testCmd = cli.Command{
 
 func setup(c *cli.Context) error {
 	osa = osadapter.RealOS()
+	bin, err := osa.LookPath("go")
+	if err != nil {
+		return err
+	}
+	goBinary = bin
 	return nil
 }
 
 func testAction(c *cli.Context) {
 	args := c.Args()
-	r, err := runner.NewTestRunner(osa, nil, args...)
+	tests := createTests(args...)
+	r, err := runner.NewTestRunner(goBinary, osa, nil, tests...)
 	if err != nil {
 		log.Printf("cannot create testrunner: %s", err.Error())
 		os.Exit(1)
@@ -50,4 +65,12 @@ func testAction(c *cli.Context) {
 		os.Exit(2)
 	}
 	osa.Copy(os.Stdout, coverSource)
+}
+
+func createTests(pkgs ...string) (tests []test.Test) {
+	tests = []test.Test{}
+	for _, pkg := range pkgs {
+		tests = append(tests, test.NewTest(goBinary, pkg, osa))
+	}
+	return
 }

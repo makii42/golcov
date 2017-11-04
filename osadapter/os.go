@@ -1,6 +1,6 @@
 package osadapter
 
-//go:generate mockgen -destination ../mocks/osadapter_mocks.go -package mocks github.com/makii42/golcov/osadapter OS,Command,File
+//go:generate mockgen -destination ../mocks/osa/mocks.go -package osa github.com/makii42/golcov/osadapter OS,Command,File
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 type (
@@ -18,6 +19,7 @@ type (
 		LookPath(file string) (string, error)
 		TempFile(dir, prefix string) (f File, err error)
 		Copy(dst io.Writer, src io.Reader) (written int64, err error)
+		Walk(path string, f filepath.WalkFunc) error
 	}
 	// OSExecCommand is the interface wrapping all functions on exec.Cmd
 	OSExecCommand interface {
@@ -88,6 +90,10 @@ func (o *osproxy) Command(name string, arg ...string) Command {
 	return &cmd{
 		realCmd,
 	}
+}
+
+func (o *osproxy) Walk(p string, f filepath.WalkFunc) error {
+	return filepath.Walk(p, f)
 }
 
 func (c *cmd) GetPath() string {
