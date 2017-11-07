@@ -15,10 +15,16 @@ type (
 	TestRunner interface {
 		Run() (io.Reader, error)
 	}
+	Discoverer interface {
+		DiscoverPkgs(p string) ([]string, error)
+	}
 	testRunner struct {
 		osa   osadapter.OS
 		Out   io.Writer
 		tests []test.Test
+	}
+	discoverer struct {
+		osa osadapter.OS
 	}
 )
 
@@ -50,9 +56,18 @@ func (tr *testRunner) Run() (io.Reader, error) {
 	return io.MultiReader(covers...), nil
 }
 
-func (tr *testRunner) DiscoverPkgs(p string) ([]string, error) {
+func NewDiscoverer(osa osadapter.OS) Discoverer {
+	return &discoverer{
+		osa: osa,
+	}
+}
+func (d *discoverer) DiscoverPkgs(p string) ([]string, error) {
 	folders := make(map[string]int)
-	err := filepath.Walk(p, discoverFunc())
+	cwd, err := d.osa.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	err = d.osa.Walk(p, discoverFunc(cwd, folders))
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +80,14 @@ func (tr *testRunner) DiscoverPkgs(p string) ([]string, error) {
 	return pkgs, nil
 }
 
-func discoverFunc() filepath.WalkFunc {
+func discoverFunc(cwd string, folders map[string]int) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			folders[path] = 0
 		} else if strings.HasSuffix(path, ".go") {
-
+			c := folders[path]
+			c++
+			folders[path] = c
 		}
 		return nil
 	}

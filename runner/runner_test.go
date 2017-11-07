@@ -3,7 +3,6 @@ package runner
 import (
 	"bytes"
 	"fmt"
-	"os"
 	tt "testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,7 +17,7 @@ import (
 // NewTestRunner tests
 //
 
-func TestCreation(t *tt.T) {
+func TesNewTestRunner(t *tt.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	osa := osmocks.NewMockOS(mc)
@@ -53,10 +52,6 @@ func TestCreationFailsBecauseNoGoBinary(t *tt.T) {
 }
 
 //
-// oneTest - single test execution tests
-//
-
-//
 // Run - test loop tests
 //
 
@@ -84,6 +79,7 @@ func TestRunAbortsOnHardError(t *tt.T) {
 	defer mc.Finish()
 	theTest := testmocks.NewMockTest(mc)
 	fakeErr := fmt.Errorf("boom")
+	theTest.EXPECT().Run().Return(nil, fakeErr)
 	tr := &testRunner{
 		tests: []test.Test{theTest},
 	}
@@ -98,13 +94,32 @@ func TestRunAbortsOnHardError(t *tt.T) {
 func TestDiscoverPkgs(t *tt.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
+	wd := "/foo/bar"
 	osa := osmocks.NewMockOS(mc)
-	wd, err := os.Getwd()
-	assert.Nil(t, err)
-	tr := &testRunner{
+	osa.EXPECT().Getwd().Return(wd, nil)
+	// todo replace with function matcher
+	osa.EXPECT().Walk(wd, gomock.Any()).Return(nil)
+	d := &discoverer{
 		osa: osa,
 	}
-	pkgs, err := tr.DiscoverPkgs(wd)
+
+	pkgs, err := d.DiscoverPkgs(wd)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, pkgs)
+}
+
+type funcMatcher struct {
+}
+
+func newFuncMatcher() gomock.Matcher {
+	return &funcMatcher{}
+}
+
+func (fm *funcMatcher) Matches(x interface{}) bool {
+	return false
+}
+
+func (fm *funcMatcher) String() string {
+	return ""
 }
