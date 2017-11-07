@@ -1,4 +1,4 @@
 vendor
-golcov
+golcov*
 mocks/*/mocks.go
 .wercker

@@ -13,6 +13,6 @@ excludes:
 - .wercker
 pipeline:
 - dep ensure
-- go generate ./...
+- go generate ./osadapter/... ./runner/... ./test/... .
 - go build -v .
-- go test -cover -v ./...
+- go test -cover -v  ./osadapter/... ./runner/... ./test/... . 
