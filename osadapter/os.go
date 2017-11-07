@@ -20,6 +20,7 @@ type (
 		TempFile(dir, prefix string) (f File, err error)
 		Copy(dst io.Writer, src io.Reader) (written int64, err error)
 		Walk(path string, f filepath.WalkFunc) error
+		Getwd() (string, error)
 	}
 	// OSExecCommand is the interface wrapping all functions on exec.Cmd
 	OSExecCommand interface {
@@ -94,6 +95,10 @@ func (o *osproxy) Command(name string, arg ...string) Command {
 
 func (o *osproxy) Walk(p string, f filepath.WalkFunc) error {
 	return filepath.Walk(p, f)
+}
+
+func (o *osproxy) Getwd() (string, error) {
+	return os.Getwd()
 }
 
 func (c *cmd) GetPath() string {
