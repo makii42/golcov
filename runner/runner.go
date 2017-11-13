@@ -20,7 +20,6 @@ type (
 	}
 	testRunner struct {
 		osa     osadapter.OS
-		Out     io.Writer
 		tests   []test.Test
 		ignored []string
 	}
@@ -32,13 +31,12 @@ type (
 // NewTestRunner creates a new runner that executes all tests in the packages specified.
 // If not packages are specified, it will discover all packages containing go sources,
 // excluding some, like `vendor`.
-func NewTestRunner(osa osadapter.OS, out io.Writer, tests ...test.Test) (TestRunner, error) {
+func NewTestRunner(osa osadapter.OS, tests ...test.Test) (TestRunner, error) {
 	if len(tests) == 0 {
 		return nil, fmt.Errorf("no tests specified")
 	}
 	return &testRunner{
 		osa:   osa,
-		Out:   out,
 		tests: tests,
 	}, nil
 }

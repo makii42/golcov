@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"bytes"
 	"fmt"
 	tt "testing"
 
@@ -17,21 +16,19 @@ import (
 // NewTestRunner tests
 //
 
-func TesNewTestRunner(t *tt.T) {
+func TestNewTestRunner(t *tt.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	osa := osmocks.NewMockOS(mc)
 	test1 := testmocks.NewMockTest(mc)
 	test2 := testmocks.NewMockTest(mc)
-	var buf bytes.Buffer
 
-	r, err := NewTestRunner(osa, &buf, test1, test2)
+	r, err := NewTestRunner(osa, test1, test2)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, r)
 	if tr, ok := r.(*testRunner); ok {
 		assert.Equal(t, osa, tr.osa)
-		assert.Equal(t, &buf, tr.Out)
 		assert.Equal(t, test1, tr.tests[0])
 		assert.Equal(t, test2, tr.tests[1])
 	} else {
@@ -44,7 +41,7 @@ func TestCreationFailsBecauseNoGoBinary(t *tt.T) {
 	defer mc.Finish()
 	osa := osmocks.NewMockOS(mc)
 
-	r, err := NewTestRunner(osa, nil) // reader not required, no tests...
+	r, err := NewTestRunner(osa) // reader not required, no tests...
 
 	assert.Nil(t, r)
 	assert.Error(t, err)
