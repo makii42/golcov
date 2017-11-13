@@ -28,4 +28,4 @@ build:
     - script: 
         name: test lcov with local package
         code: |
-          ./golcov test ./runner/... ./osadapter/...
+          ./golcov test $(go list ./...)
