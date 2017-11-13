@@ -19,9 +19,10 @@ type (
 		DiscoverPkgs(p string) ([]string, error)
 	}
 	testRunner struct {
-		osa   osadapter.OS
-		Out   io.Writer
-		tests []test.Test
+		osa     osadapter.OS
+		Out     io.Writer
+		tests   []test.Test
+		ignored []string
 	}
 	discoverer struct {
 		osa osadapter.OS
