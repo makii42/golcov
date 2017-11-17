@@ -15,7 +15,11 @@ jobs:
       - run: go test -v $(go list ./...)
       - run: go build .
       - run: ./golcov --help
-      - run: gox -output="dist/{{.Dir}}_{{.OS}}_{{.Arch}}" --osarch="linux/386 linux/amd64 linux/arm darwin/386 darwin/amd64 windows/386 windows/adm64" 
+      - run: |
+          gox \
+            -output="dist/{{.Dir}}_{{.OS}}_{{.Arch}}" \
+            -osarch="linux/386 linux/amd64 linux/arm darwin/386 darwin/amd64 windows/386 windows/adm64" \
+            -ldflags="-X main.version=$CIRCLE_TAG -X main.revision=$CIRCLE_SHA1"
       - run: cd dist && sha256sum golcov* | tee sha256sums.txt
       - persist_to_workspace:
           root: ./dist

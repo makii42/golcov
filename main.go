@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -17,6 +18,7 @@ func main() {
 		Usage: "Runs go test with default coverage options for each package and writes it to standard out",
 		Commands: []cli.Command{
 			testCmd,
+			versionCmd,
 		},
 		Before: setup,
 		Action: testAction,
@@ -33,6 +35,8 @@ func main() {
 var (
 	osa      osadapter.OS
 	goBinary string
+	version  string = "dev"
+	revision string = "dev"
 )
 
 var testCmd = cli.Command{
@@ -73,4 +77,12 @@ func createTests(pkgs ...string) (tests []test.Test) {
 		tests = append(tests, test.NewTest(goBinary, pkg, osa))
 	}
 	return
+}
+
+var versionCmd = cli.Command{
+	Name:  "version",
+	Usage: "displays the version",
+	Action: func(c *cli.Context) {
+		fmt.Printf("%s version: %s (%s)\n", c.App.Name, version, revision)
+	},
 }
