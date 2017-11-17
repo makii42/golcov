@@ -65,8 +65,14 @@ func testAction(c *cli.Context) {
 	}
 	coverSource, err := r.Run()
 	if err != nil {
+		tf, ok := test.IsTestFailure(err)
+		if ok {
+			fmt.Fprintf(os.Stderr, "error running tests in pkg %s\n", tf.Pkg)
+			fmt.Fprintf(os.Stderr, "Output:\n--------------------------------\n%s\n--------------------------------\n", string(tf.Output))
+			os.Exit(2)
+		}
 		log.Printf("error running tests: %s", err.Error())
-		os.Exit(2)
+		os.Exit(3)
 	}
 	osa.Copy(os.Stdout, coverSource)
 }

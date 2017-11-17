@@ -36,11 +36,11 @@ type (
 		consoleOutput []byte
 		coverFile     osadapter.File
 	}
-	testError struct {
+	TestFailure struct {
 		rc       int
-		pkg      string
-		output   []byte
-		original error
+		Pkg      string
+		Output   []byte
+		Original error
 	}
 )
 
@@ -79,7 +79,7 @@ func (t *test) Run() (Outcome, error) {
 		} else {
 			rc = 998
 		}
-		return nil, newTestError(
+		return nil, newTestFailure(
 			rc,
 			t.pkg,
 			output,
@@ -104,10 +104,15 @@ func (o *outcome) CoverFile() osadapter.File {
 	return o.coverFile
 }
 
-func newTestError(rc int, pkg string, out []byte, err error) *testError {
-	return &testError{rc, pkg, out, err}
+func newTestFailure(rc int, pkg string, out []byte, err error) *TestFailure {
+	return &TestFailure{rc, pkg, out, err}
 }
 
-func (e *testError) Error() string {
-	return fmt.Sprintf("error during test execution for pkg '%s'", e.pkg)
+func (e *TestFailure) Error() string {
+	return fmt.Sprintf("error during test execution for pkg '%s'", e.Pkg)
+}
+
+func IsTestFailure(e error) (*TestFailure, bool) {
+	tf, ok := e.(*TestFailure)
+	return tf, ok
 }

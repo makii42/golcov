@@ -18,7 +18,6 @@ func TestNewTest(t *tt.T) {
 	test := NewTest(goBin, pkg, osa)
 
 	assert.NotNil(t, test)
-
 }
 
 func TestRunReturnsSuccessResult(t *tt.T) {
@@ -75,8 +74,8 @@ func TestRunFailsBecauseCommandErrors(t *tt.T) {
 
 	assert.Nil(t, outcome)
 	assert.NotNil(t, err)
-	if testErr, ok := err.(*testError); ok {
-		assert.Equal(t, fakeErr, testErr.original)
+	if testErr, ok := err.(*TestFailure); ok {
+		assert.Equal(t, fakeErr, testErr.Original)
 	} else {
 		t.Fail()
 	}
