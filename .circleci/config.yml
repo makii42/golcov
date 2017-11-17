@@ -1,0 +1,54 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/makii42/golcov
+    steps:
+      - checkout
+      - run: go get -u github.com/golang/mock/gomock
+      - run: go get -u github.com/golang/mock/mockgen
+      - run: go get -u github.com/golang/dep/cmd/dep
+      - run: go get -u github.com/mitchellh/gox
+      - run: dep ensure -v
+      - run: go generate $(go list ./...)
+      - run: go test -v $(go list ./...)
+      - run: go build .
+      - run: ./golcov --help
+      - run: gox -output="dist/{{.Dir}}_{{.OS}}_{{.Arch}}" --osarch="linux/386 linux/amd64 linux/arm darwin/386 darwin/amd64 windows/386 windows/adm64" 
+      - run: cd dist && sha256sum golcov* | tee sha256sums.txt
+      - persist_to_workspace:
+          root: ./dist
+          paths:
+            - "*"
+
+  dist:
+    docker:
+      - image: tsub/ghr:latest
+    working_directory: /go/src/github.com/makii42/golcov
+    steps: 
+      - attach_workspace:
+          at: ./dist
+      - run: ls -la ./dist/
+      - run: cd dist && sha256sum -c sha256sums.txt 
+      - run: ghr -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG dist/
+
+workflows:
+  version: 2
+  build_and_dist:
+    jobs: 
+      - build:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - dist:
+          requires:
+            - build
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
